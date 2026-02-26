@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlashStudy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== HOME VIEW ===== -->
+    <section id="home-view" class="view active">
+      <header class="top-bar">
+        <h1 class="logo">FlashStudy</h1>
+      </header>
+
+      <div class="home-content">
+        <button id="new-set-btn" class="btn btn-primary btn-large">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Flash Set
+        </button>
+
+        <div id="sets-list" class="sets-grid">
+          <!-- populated by JS -->
+        </div>
+
+        <div id="empty-state" class="empty-state">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <p>No flash sets yet</p>
+          <span>Create your first set to start studying!</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CREATE / EDIT VIEW ===== -->
+    <section id="create-view" class="view">
+      <header class="top-bar">
+        <button id="create-back-btn" class="btn-icon" aria-label="Back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h2 id="create-title">New Flash Set</h2>
+        <button id="save-set-btn" class="btn btn-primary btn-small">Save</button>
+      </header>
+
+      <div class="create-content">
+        <input id="set-name-input" type="text" class="input-field set-name-field" placeholder="Set name (e.g. Biology Chapter 5)" maxlength="80" autocomplete="off">
+
+        <div id="cards-container" class="cards-editor">
+          <!-- card editors populated by JS -->
+        </div>
+
+        <button id="add-card-btn" class="btn btn-outline btn-add-card">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Card
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== PREP LAUNCHER MODAL ===== -->
+    <div id="prep-launcher" class="modal-overlay hidden">
+      <div class="modal-box">
+        <h3>Test Prep</h3>
+        <p id="prep-launcher-info" class="modal-sub">Choose which cards to study</p>
+        <div class="launcher-options">
+          <button class="launcher-opt" data-filter="all">
+            <span class="launcher-opt-icon">&#x1F4DA;</span>
+            <span class="launcher-opt-label">All Cards</span>
+            <span class="launcher-opt-count" id="prep-count-all"></span>
+          </button>
+          <button class="launcher-opt" data-filter="weak">
+            <span class="launcher-opt-icon">&#x26A0;</span>
+            <span class="launcher-opt-label">Weak Cards</span>
+            <span class="launcher-opt-desc">Missed + Shaky</span>
+            <span class="launcher-opt-count" id="prep-count-weak"></span>
+          </button>
+          <button class="launcher-opt" data-filter="unreviewed">
+            <span class="launcher-opt-icon">&#x2753;</span>
+            <span class="launcher-opt-label">Unreviewed</span>
+            <span class="launcher-opt-desc">Never tested</span>
+            <span class="launcher-opt-count" id="prep-count-new"></span>
+          </button>
+        </div>
+        <button id="prep-launcher-cancel" class="btn btn-outline btn-small" style="margin-top:12px;width:100%;justify-content:center">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ===== TEST PREP VIEW ===== -->
+    <section id="prep-view" class="view">
+      <header class="top-bar">
+        <button id="prep-back-btn" class="btn-icon" aria-label="Back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h2 id="prep-set-title">Test Prep</h2>
+        <span id="prep-progress" class="progress-badge">1 / 10</span>
+      </header>
+
+      <div class="prep-progress-bar-wrap">
+        <div id="prep-progress-bar" class="prep-progress-bar" style="width:0%"></div>
+      </div>
+
+      <div class="study-content">
+        <div class="prep-card" id="prep-card">
+          <span class="card-label">QUESTION</span>
+          <div id="prep-front" class="card-body"></div>
+        </div>
+
+        <div id="prep-answer-section" class="prep-answer-section hidden">
+          <div class="prep-card prep-card-answer">
+            <span class="card-label">ANSWER</span>
+            <div id="prep-back" class="card-body"></div>
+          </div>
+        </div>
+
+        <button id="prep-show-btn" class="btn btn-primary btn-large">Show Answer</button>
+
+        <div id="prep-rating-section" class="prep-rating-section hidden">
+          <p class="rate-prompt">How well did you know this?</p>
+          <div class="star-rating" id="star-rating">
+            <div class="star-row"></div>
+            <span class="star-label" id="star-label"></span>
+          </div>
+          <button id="star-confirm-btn" class="btn btn-primary" style="margin-top:10px;width:100%;justify-content:center" disabled>Confirm Rating</button>
+        </div>
+      </div>
+
+      <!-- session summary overlay -->
+      <div id="prep-summary" class="study-complete hidden">
+        <div class="complete-card summary-card">
+          <h3>Session Complete!</h3>
+          <div id="prep-score" class="prep-score"></div>
+          <div id="prep-breakdown" class="prep-breakdown"></div>
+          <p id="prep-summary-msg" class="summary-msg"></p>
+          <div class="complete-actions summary-actions">
+            <button id="prep-review-weak-btn" class="btn btn-outline btn-small">Review Weak</button>
+            <button id="prep-stats-btn" class="btn btn-outline btn-small">View Stats</button>
+            <button id="prep-done-btn" class="btn btn-primary btn-small">Done</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STATS VIEW ===== -->
+    <section id="stats-view" class="view">
+      <header class="top-bar">
+        <button id="stats-back-btn" class="btn-icon" aria-label="Back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h2 id="stats-set-title">Stats</h2>
+        <button id="reset-stats-btn" class="btn btn-small" style="background:var(--danger);color:#fff">Reset Stats</button>
+      </header>
+
+      <div class="stats-content">
+        <!-- mastery ring -->
+        <div class="mastery-section">
+          <div class="mastery-ring" id="mastery-ring">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="var(--surface2)" stroke-width="10"/>
+              <circle id="mastery-circle" cx="60" cy="60" r="52" fill="none" stroke="var(--success)" stroke-width="10"
+                stroke-dasharray="326.7" stroke-dashoffset="326.7" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="mastery-label">
+              <span id="mastery-pct" class="mastery-pct">0%</span>
+              <span class="mastery-sub">Mastery</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- breakdown bar -->
+        <div class="stats-section">
+          <h4>Card Breakdown</h4>
+          <div class="breakdown-bar" id="breakdown-bar"></div>
+          <div class="breakdown-legend" id="breakdown-legend"></div>
+        </div>
+
+        <!-- session history -->
+        <div class="stats-section">
+          <h4>Session History</h4>
+          <div id="session-history" class="session-history"></div>
+        </div>
+
+        <!-- per-card list -->
+        <div class="stats-section">
+          <h4>Card Details</h4>
+          <div id="card-details" class="card-details-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== STUDY VIEW ===== -->
+    <section id="study-view" class="view">
+      <header class="top-bar">
+        <button id="study-back-btn" class="btn-icon" aria-label="Back">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h2 id="study-set-title">Study</h2>
+        <span id="study-progress" class="progress-badge">1 / 10</span>
+      </header>
+
+      <div class="study-content">
+        <div id="flashcard" class="flashcard" tabindex="0">
+          <div class="flashcard-inner">
+            <div class="flashcard-front">
+              <span class="card-label">FRONT</span>
+              <div id="card-front-content" class="card-body"></div>
+            </div>
+            <div class="flashcard-back">
+              <span class="card-label">BACK</span>
+              <div id="card-back-content" class="card-body"></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="flip-hint" id="flip-hint">Tap card or press Space to flip</p>
+
+        <div class="study-controls">
+          <button id="prev-card-btn" class="btn btn-outline btn-nav" aria-label="Previous">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            Prev
+          </button>
+          <button id="next-card-btn" class="btn btn-primary btn-nav" aria-label="Next">
+            Next
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- completion overlay -->
+      <div id="study-complete" class="study-complete hidden">
+        <div class="complete-card">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <h3>Set Complete!</h3>
+          <p id="complete-msg">You reviewed all 10 cards.</p>
+          <div class="complete-actions">
+            <button id="restart-btn" class="btn btn-outline">Study Again</button>
+            <button id="done-btn" class="btn btn-primary">Done</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- toast container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
