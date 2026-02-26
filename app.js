@@ -295,6 +295,7 @@
           <button class="btn btn-primary btn-small prep-btn" style="background:#a855f7">Test Prep</button>
           ${reviewed > 0 ? '<button class="btn btn-outline btn-small stats-btn">Stats</button>' : ''}
           <button class="btn btn-outline btn-small edit-btn">Edit</button>
+          <button class="btn btn-outline btn-small export-btn">Export</button>
           <button class="btn-danger-text delete-btn">Delete</button>
         </div>`;
 
@@ -303,6 +304,7 @@
       const statsBtn = $('.stats-btn', card);
       if (statsBtn) statsBtn.addEventListener('click', e => { e.stopPropagation(); openStats(set.id); });
       $('.edit-btn', card).addEventListener('click', e => { e.stopPropagation(); openEditor(set.id); });
+      $('.export-btn', card).addEventListener('click', e => { e.stopPropagation(); exportSet(set.id); });
       $('.delete-btn', card).addEventListener('click', async e => {
         e.stopPropagation();
         if (await confirm(`Delete "<strong>${escapeHtml(set.name)}</strong>"? This cannot be undone.`)) {
@@ -314,6 +316,42 @@
       });
 
       setsList.appendChild(card);
+    }
+  }
+
+  // ── Export / Import ──
+  function exportSet(setId) {
+    const set = sets.find(s => s.id === setId);
+    if (!set) return;
+    const exportData = { flashstudy: true, version: 1, name: set.name, cards: set.cards };
+    const blob = new Blob([JSON.stringify(exportData)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = set.name.replace(/[^a-z0-9]+/gi, '_').toLowerCase() + '.flashstudy.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Set exported!');
+  }
+
+  async function importSet(file) {
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (!data.flashstudy || !data.name || !Array.isArray(data.cards) || data.cards.length === 0) {
+        toast('Invalid flash set file', true);
+        return;
+      }
+      const newSet = { id: generateId(), name: data.name, cards: data.cards };
+      sets.push(newSet);
+      if (!await saveSets(sets)) { sets = await loadSets(); return; }
+      toast(`Imported "${data.name}"!`);
+      await renderHome();
+    } catch {
+      toast('Failed to read file', true);
     }
   }
 
@@ -944,6 +982,10 @@
 
   // Home
   newSetBtn.addEventListener('click', () => openEditor());
+  const importBtn = $('#import-set-btn');
+  const importFileInput = $('#import-file-input');
+  importBtn.addEventListener('click', () => importFileInput.click());
+  importFileInput.addEventListener('change', e => { importSet(e.target.files[0]); e.target.value = ''; });
   createBackBtn.addEventListener('click', async () => { showView(homeView); await renderHome(); });
   saveSetBtn.addEventListener('click', saveSet);
   addCardBtn.addEventListener('click', () => { addCardEditor(); renumberCards(); });

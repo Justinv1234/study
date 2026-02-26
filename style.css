@@ -127,7 +127,8 @@ body {
   width: 100%;
 }
 
-#new-set-btn { width:100%; justify-content:center; margin-bottom:28px; }
+.home-actions { display: flex; gap: 10px; margin-bottom: 28px; }
+.home-actions .btn { flex: 1; justify-content: center; }
 
 .sets-grid {
   display: grid;
